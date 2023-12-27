@@ -4,6 +4,9 @@ import os
 import time
 
 import openai
+from openai import OpenAI
+
+client = OpenAI()
 import pandas as pd
 from tqdm.autonotebook import tqdm
 
@@ -38,17 +41,16 @@ structure your answer like the template I provide you and return this template
 
 """
 xray_reports = pd.read_csv(args.xray_reports)
-openai.api_key_path = args.api_key_path
+# TODO: The 'openai.api_key_path' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(api_key_path=args.api_key_path)'
+# openai.api_key_path = args.api_key_path
 
 
 def classify_xray(report):
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": report},
-        ],
-    )
+    response = client.chat.completions.create(model="gpt-4",
+    messages=[
+        {"role": "system", "content": system},
+        {"role": "user", "content": report},
+    ])
 
     result = response["choices"][0]["message"]["content"]
     json_text = result.split("{", 1)[1].split("}", 1)[0]

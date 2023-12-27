@@ -5,12 +5,13 @@ import time
 from difflib import SequenceMatcher
 
 import openai
+import streamlit as st
 
-
+# Utility function to measure the similarity between two strings using the SequenceMatcher algorithm.
 def similar(a, b):
     return SequenceMatcher(None, a.upper(), b.upper()).ratio()
 
-
+# Finds the key in a dictionary that is most similar to the given key, based on a similarity threshold.
 def find_closest_key(dct_keys, key, threshold=0.75):
     closest_key = None
     highest_similarity = 0
@@ -31,7 +32,9 @@ def find_closest_key(dct_keys, key, threshold=0.75):
         return "OWN"
 
 
+# This class is a wrapper for the GPT-4 API that helps in structuring radiology reports.
 class GPTStructuredReporting:
+    # Constructor: Initializes the API key, model type, and loads the structuring templates.
     def __init__(self, api_key: str, path_to_templates: str, model: str = "gpt-4", **kwargs):
         self.set_api_key(api_key)
         self.model = model
@@ -39,20 +42,23 @@ class GPTStructuredReporting:
             json_string = file.read()
         self.templates = json.loads(json_string)
         self.openai_kwargs = kwargs
-
+        
+    # Main entry point for processing a report, will retry on failure up to 10 times.
+    
     def __call__(self, report_text: str) -> str:
+        error_msg = st.empty()
         for i in range(10):
             try:
                 return self.send_request(report_text)
             except Exception as e:
-                print(f"Error: {e}")
+                
                 if i < 9:  # don't wait after the last retry
-                    print("Retrying after 10 seconds...")
+                    error_msg.error("Retrying in 10 seconds\n" + f"Error: {e}")
                     time.sleep(10)  # wait for 5 seconds before retrying
                 else:
-                    print("Maximum retries reached.")
-                    return ""
-
+                    error_msg.error("Maximum retries reached.\n" + f"Error: {e}")
+                    raise Exception(f"{e}")
+    # Sends a request to the GPT-4 API with the given report text and processes the response.
     def send_request(self, report_text) -> str:
         openai.api_key = self._api_key
 
@@ -67,7 +73,7 @@ class GPTStructuredReporting:
         )
         main_finding, template = self.get_template_and_finding(response1)
         template = find_closest_key(self.templates.keys(), template)
-
+        
         print("MAIN FINDING: ", main_finding)
         print("TEMPLATE: ", template)
         response2 = openai.ChatCompletion.create(
@@ -85,14 +91,14 @@ class GPTStructuredReporting:
             return json.loads(content)
         except:
             return content
-
+    # Sets the API key, checking if it's a file or a direct string.
     def set_api_key(self, api_key: str):
         if os.path.exists(api_key):
             with open(api_key, "r") as f:
                 self._api_key = f.read().strip()
         else:
             self._api_key = api_key
-
+    # The first system message sent to GPT-4, prompting for the analysis of the report.
     def system1(self):
         return (
             (
@@ -113,7 +119,7 @@ class GPTStructuredReporting:
                 "If the text is no radiology report return '...'."
             )
         )
-
+    # The second system message sent to GPT-4, prompting to structure the report based on a template.
     def system2(self, template: dict):
         if template in self.templates.keys():
             return (
@@ -170,7 +176,7 @@ class GPTStructuredReporting:
                 "[Additional Comments]\n"
                 "[Any Other Relevant Information or Additional Comments]\n"
             )
-
+    # Parses the response from GPT-4 to extract the main finding and the template to use.
     def get_template_and_finding(self, response: dict) -> tuple:
         content = response["choices"][0]["message"]["content"]
 
