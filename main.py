@@ -2,16 +2,29 @@ import streamlit as st
 from gpt import GPTStructuredReporting
 import os
 import json
+from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, convert_json_to_table
 improvement_items = """
 1. Support for file upload (PDF, txt)
 2. Show json in a more readable format; it's probably understandable now but not ideal
 3. Add detailed instructions
 4. Add evidence
 5. Try example
-
-
 """
 
+def upload_file():
+    uploaded_file = st.file_uploader("Choose a file", type=['txt', 'pdf', 'docx'])
+    if uploaded_file is not None:
+        if uploaded_file.type == 'application/pdf':
+            report = text_from_pdf_file(uploaded_file)
+        elif uploaded_file.type == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            report = read_docx(uploaded_file)
+        elif uploaded_file.type == 'text/plain':
+            # Decode the byte content to string
+            report = str(uploaded_file.read(), 'utf-8')
+        print(report)
+        return report
+    else:
+        return None
 @st.cache_data
 def process_report_helper(report, api_key, test=False):
     # Initialize the GPTStructuredReporting class with the API key and template path.
@@ -53,52 +66,64 @@ def instructions():
              To try an example, click the 'Try example' button. After ~20-25 seconds, the \
              example report will be structured and displayed below in JSON format.
              """)
-    st.warning("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
 def credits():
     st.write("**Credits**")
     st.write("This app is a Streamlit adaptation of the [gpt4-structured-reporting](https://github.com/kbressem/gpt4-structured-reporting) GitHub repository, \
              created by Keno Bressem, a board-certified radiologist. For more information about him, please \
              see https://aim.hms.harvard.edu/team/keno-bressem.")
+def disclaimer():
+     st.warning("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
+
 def main(): 
   initialize_session_state()
   # Set up the title and instructions for the Streamlit app interface.
   st.title('Radiology Report Structuring Tool')
   instructions()
   credits()
+  disclaimer()
 
 
   # Create a text area in the UI for the user to input or paste the radiology report.
-  text_container = st.empty()
-  report = text_container.text_area("Report")
-
+  report_upload_option = st.radio("Option for entering the report", ("Upload report as file", "Paste report"))
+  if report_upload_option == "Paste report":
+      text_container = st.empty()
+      report = text_container.text_area("Report")
+  else:
+      report = upload_file() #User uploads a file and it gets converted to text. Doesn't support images or bold/italics/underline/color yet.
   # Create try example button
-  try_example = st.button("Try example")
   # The submit button for processing the report.
+  
+  try_example = st.button("Try example")
   button = st.button("Submit")
+
+  if not report and not try_example:
+      st.stop()
   # OpenAI API key from session state
   api_key = st.session_state["OPENAI_API_KEY"]
 
-  # Stop the app if the report is empty (no input from the user).
-  # When the user clicks the 'Submit' button, process the report.
   if try_example:
       # This worked well, but "VASCULAR TUMOR INVOLVEMENT AND DEGREE" was classified as "No", different than the provided test case
-      EXAMPLE = """
-  CLINICAL HISTORY: Evaluation for pancreatic cancer.
-  TECHNIQUE: Non-contrast, arterial phase, and venous phase contrast-enhanced CT images of the abdomen and pelvis were obtained using a multidetector CT scanner. Multiplanar reformations were also reviewed.
-  FINDINGS: 
-      Pancreatic tumor: There is a 3.5 x 3.2 x 2.8 cm hypodense mass in the pancreatic head, which demonstrates mild heterogeneous enhancement on arterial and venous phases. The mass causes mild upstream dilation of the pancreatic duct, measuring up to 4 mm in diameter. There is no pancreatic parenchymal atrophy.
-      Metastatic disease: Multiple liver lesions are identified, the largest being in segment VIII, measuring 2.3 x 1.8 cm, with arterial enhancement and washout on the venous phase, consistent with metastatic deposits. No intrahepatic biliary dilatation is observed. There are enlarged peripancreatic, porta hepatis, and retroperitoneal lymph nodes, the largest measuring 1.8 x 1.3 cm. No pelvic or retrocrural lymphadenopathy is detected. No suspicious lung nodules or pleural effusions are noted.
-      Vascular involvement: The pancreatic mass encases the superior mesenteric vein (SMV) and partially compresses it, with less than 50% narrowing of the vessel lumen. The main portal vein, splenic vein, and superior mesenteric artery (SMA) are patent and not encased by the tumor. No signs of cavernous transformation are observed.
-      Thrombosis: No thrombus is identified within the portal vein, SMV, splenic vein, or inferior vena cava (IVC).
-      Anatomy: The liver, spleen, adrenal glands, and kidneys demonstrate normal size, shape, and enhancement pattern. No renal or ureteral calculi are detected. The gallbladder, appendix, and bowel loops are unremarkable. No free fluid or air is observed in the abdominal or pelvic cavities.
-  IMPRESSION: Hypodense mass in the pancreatic head, measuring 3.5 x 3.2 x 2.8 cm, consistent with a pancreatic neoplasm. Multiple liver lesions consistent with metastatic disease. Enlarged peripancreatic, porta hepatis, and retroperitoneal lymph nodes, suggestive of lymph node metastases. Partial encasement and compression of the superior mesenteric vein by the pancreatic mass, without thrombosis. No other vascular involvement or thrombosis identified. No additional intra-abdominal or pelvic pathologies detected.
-  """
-  
-      report = text_container.text_area("Report", value=EXAMPLE, height=400, max_chars=10000) 
-      process_report(report, api_key, test=False)  
+      if report_upload_option == "Paste report":
+          EXAMPLE = """
+      CLINICAL HISTORY: Evaluation for pancreatic cancer.
+      TECHNIQUE: Non-contrast, arterial phase, and venous phase contrast-enhanced CT images of the abdomen and pelvis were obtained using a multidetector CT scanner. Multiplanar reformations were also reviewed.
+      FINDINGS: 
+          Pancreatic tumor: There is a 3.5 x 3.2 x 2.8 cm hypodense mass in the pancreatic head, which demonstrates mild heterogeneous enhancement on arterial and venous phases. The mass causes mild upstream dilation of the pancreatic duct, measuring up to 4 mm in diameter. There is no pancreatic parenchymal atrophy.
+          Metastatic disease: Multiple liver lesions are identified, the largest being in segment VIII, measuring 2.3 x 1.8 cm, with arterial enhancement and washout on the venous phase, consistent with metastatic deposits. No intrahepatic biliary dilatation is observed. There are enlarged peripancreatic, porta hepatis, and retroperitoneal lymph nodes, the largest measuring 1.8 x 1.3 cm. No pelvic or retrocrural lymphadenopathy is detected. No suspicious lung nodules or pleural effusions are noted.
+          Vascular involvement: The pancreatic mass encases the superior mesenteric vein (SMV) and partially compresses it, with less than 50% narrowing of the vessel lumen. The main portal vein, splenic vein, and superior mesenteric artery (SMA) are patent and not encased by the tumor. No signs of cavernous transformation are observed.
+          Thrombosis: No thrombus is identified within the portal vein, SMV, splenic vein, or inferior vena cava (IVC).
+          Anatomy: The liver, spleen, adrenal glands, and kidneys demonstrate normal size, shape, and enhancement pattern. No renal or ureteral calculi are detected. The gallbladder, appendix, and bowel loops are unremarkable. No free fluid or air is observed in the abdominal or pelvic cavities.
+      IMPRESSION: Hypodense mass in the pancreatic head, measuring 3.5 x 3.2 x 2.8 cm, consistent with a pancreatic neoplasm. Multiple liver lesions consistent with metastatic disease. Enlarged peripancreatic, porta hepatis, and retroperitoneal lymph nodes, suggestive of lymph node metastases. Partial encasement and compression of the superior mesenteric vein by the pancreatic mass, without thrombosis. No other vascular involvement or thrombosis identified. No additional intra-abdominal or pelvic pathologies detected.
+      """
+      
+          report = text_container.text_area("Report", value=EXAMPLE, height=400, max_chars=10000) 
+      elif report_upload_option == "Upload report as file":
+          report = text_from_pdf_file_path("example_files/sample_radiology_report.pdf")
+      process_report(report, api_key, test=True)  
+
 
   if button and report.strip():
-      process_report(report, api_key, test=False)
+      process_report(report, api_key, test=True)
 
   if st.session_state["structured_report"]:
       st.markdown("## Please review the structured report below")

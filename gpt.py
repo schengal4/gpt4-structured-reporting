@@ -7,6 +7,10 @@ from difflib import SequenceMatcher
 import openai
 import streamlit as st
 
+credits = """
+The code in this file (gpt.py) is from https://github.com/kbressem/gpt4-structured-reporting. 
+Also, the reports folder and reports_templates.json file is from that repository.
+"""
 # Utility function to measure the similarity between two strings using the SequenceMatcher algorithm.
 def similar(a, b):
     return SequenceMatcher(None, a.upper(), b.upper()).ratio()
@@ -197,3 +201,4 @@ class GPTStructuredReporting:
             template = "OWN"
 
         return main_finding, template
+    
