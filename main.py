@@ -119,11 +119,11 @@ def main():
           report = text_container.text_area("Report", value=EXAMPLE, height=400, max_chars=10000) 
       elif report_upload_option == "Upload report as file":
           report = text_from_pdf_file_path("example_files/sample_radiology_report.pdf")
-      process_report(report, api_key, test=True)  
+      process_report(report, api_key, test=False)  
 
 
   if button and report.strip():
-      process_report(report, api_key, test=True)
+      process_report(report, api_key, test=False)
 
   if st.session_state["structured_report"]:
       st.markdown("## Please review the structured report below")
