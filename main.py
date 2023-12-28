@@ -54,11 +54,17 @@ def instructions():
              example report will be structured and displayed below in JSON format.
              """)
     st.warning("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
+def credits():
+    st.write("**Credits**")
+    st.write("This app is a Streamlit adaptation of the [gpt4-structured-reporting](https://github.com/kbressem/gpt4-structured-reporting) GitHub repository, \
+             created by Keno Bressem, a board-certified radiologist. For more information about him, please \
+             see https://aim.hms.harvard.edu/team/keno-bressem.")
 def main(): 
   initialize_session_state()
   # Set up the title and instructions for the Streamlit app interface.
   st.title('Radiology Report Structuring Tool')
   instructions()
+  credits()
 
 
   # Create a text area in the UI for the user to input or paste the radiology report.
