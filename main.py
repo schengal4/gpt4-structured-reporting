@@ -26,7 +26,7 @@ def process_report_helper(report, api_key, test=False):
 
 def process_report(report, api_key, test=False):
     with st.spinner('Processing and structuring report...'):
-        try:
+        try: 
             st.session_state["structured_report"] = process_report_helper(report, api_key, test)
         except Exception as e:
             if "Incorrect API key" in str(e):
