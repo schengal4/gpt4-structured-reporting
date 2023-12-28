@@ -1,7 +1,6 @@
 import streamlit as st
 from gpt import GPTStructuredReporting
 import os
-from secret_keys import OPENAI_API_KEY
 import json
 improvement_items = """
 1. Support for file upload (PDF, txt)
@@ -39,6 +38,7 @@ def initialize_session_state():
         st.session_state["structured_report"] = None
     if "OPENAI_API_KEY" not in st.session_state:
         try:
+            from secret_keys import OPENAI_API_KEY
             st.session_state["OPENAI_API_KEY"] = OPENAI_API_KEY
         except:
             st.session_state["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY")
