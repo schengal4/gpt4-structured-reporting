@@ -134,3 +134,5 @@ reports.json
 structure_mimic.ipynb
 static/unused.json
 sample_reports.json
+
+secret_keys.py

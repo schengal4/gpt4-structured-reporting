@@ -47,17 +47,19 @@ class GPTStructuredReporting:
     
     def __call__(self, report_text: str) -> str:
         error_msg = st.empty()
-        for i in range(10):
+        for i in range(2):
             try:
                 return self.send_request(report_text)
             except Exception as e:
-                
-                if i < 9:  # don't wait after the last retry
+                if "Incorrect API key" in str(e):
+                    print(str(e))
+                    raise Exception(e)
+                if i < 1:  # don't wait after the last retry
                     error_msg.error("Retrying in 10 seconds\n" + f"Error: {e}")
                     time.sleep(10)  # wait for 5 seconds before retrying
                 else:
                     error_msg.error("Maximum retries reached.\n" + f"Error: {e}")
-                    raise Exception(f"{e}")
+                    raise Exception(e)
     # Sends a request to the GPT-4 API with the given report text and processes the response.
     def send_request(self, report_text) -> str:
         openai.api_key = self._api_key
@@ -73,7 +75,7 @@ class GPTStructuredReporting:
         )
         main_finding, template = self.get_template_and_finding(response1)
         template = find_closest_key(self.templates.keys(), template)
-        
+
         print("MAIN FINDING: ", main_finding)
         print("TEMPLATE: ", template)
         response2 = openai.ChatCompletion.create(
