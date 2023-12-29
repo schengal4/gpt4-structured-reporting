@@ -4,6 +4,21 @@ import os
 import json
 from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, json_to_table
 import pandas as pd
+
+improvement_suggestions = """
+1. Use company API key instead of the developer's.
+2. Declutter UI.
+3.. When downloading csv, make it such that the findings are not displayed in 
+one long line; instead broken up into multiple lines (but still the same cells).
+4. Make the app HIPAA-compliant and GDPR-compliant, including the call to openai api.
+5. Beautify the app.
+"""
+
+decluttering_ui_steps = """
+1. Formatting errors
+2. Button layout
+3. Section layout
+"""
 def upload_file():
     uploaded_file = st.file_uploader("Choose a file", type=['txt', 'pdf', 'docx'])
     if uploaded_file is not None:
@@ -53,9 +68,10 @@ def instructions():
              It uses the OpenAI API (GPT-4) to generate the structured report.")
     st.write("**Instructions**")
     st.write("""
-            1. Upload a radiology report as a .txt, .pdf, or .docx file. Or, enter/paste a radiology report into the text box and press Ctrl+Enter.
-            2. Click the 'Submit' button.  
-            3. After ~20-25 seconds, the report will be structured and displayed below in a table or JSON format.  
+              1. Upload a radiology report as a .txt, .pdf, or .docx file. Or, enter/paste a radiology report into the text box and press Ctrl+Enter.
+              2. Click the 'Submit' button.  
+              3. After ~20-25 seconds, the report will be structured and displayed below in a table or JSON format.  
+             
             To try an example, click the 'Try example' button. After ~20-25 seconds, the \
             example report will be structured and displayed below in JSON format.
              """)
@@ -78,7 +94,7 @@ def main():
 
 
   # Create a text area in the UI for the user to input or paste the radiology report.
-  report_upload_option = st.radio("Option for entering the report", ("Upload report as file", "Paste report"))
+  report_upload_option = st.radio("Option for entering the report", ("Upload report as file", "Paste report"), horizontal=True)
   if report_upload_option == "Paste report":
       text_container = st.empty()
       report = text_container.text_area("Report")
@@ -121,7 +137,7 @@ def main():
   if st.session_state["structured_report"]:
       st.markdown("## Please review the structured report below")
       structured_report = st.session_state["structured_report"]
-      view_option = st.radio("View structured report as", ("JSON", "Table"))
+      view_option = st.radio("View structured report as", ("JSON", "Table"), horizontal=True)
       if view_option == "JSON":
           st.json(structured_report)
           pretty_json = json.dumps(structured_report, indent=2)
