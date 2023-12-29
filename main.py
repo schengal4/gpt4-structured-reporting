@@ -4,10 +4,6 @@ import os
 import json
 from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, json_to_table
 import pandas as pd
-improvement_items = """
-3. Add detailed instructions on how to use the app
-4. Company API key
-"""
 def upload_file():
     uploaded_file = st.file_uploader("Choose a file", type=['txt', 'pdf', 'docx'])
     if uploaded_file is not None:
