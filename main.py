@@ -2,15 +2,12 @@ import streamlit as st
 from gpt import GPTStructuredReporting
 import os
 import json
-from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, convert_json_to_table
+from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, json_to_table
+import pandas as pd
 improvement_items = """
-1. Support for file upload (PDF, txt)
-2. Show json in a more readable format; it's probably understandable now but not ideal
-3. Add detailed instructions
-4. Add evidence
-5. Try example
+3. Add detailed instructions on how to use the app
+4. Company API key
 """
-
 def upload_file():
     uploaded_file = st.file_uploader("Choose a file", type=['txt', 'pdf', 'docx'])
     if uploaded_file is not None:
@@ -44,7 +41,7 @@ def process_report(report, api_key, test=False):
             if "Incorrect API key" in str(e):
                 st.error("Incorrect API key used in the program. Please leave a comment in the comments section about this so I can know.")
             else:
-                st.error("An error occurred while processing the report. Please try again.")
+                st.error("An error occurred while processing the report. Please leave a comment in the comments section about this so I can know.")
                 st.error("Error: " + str(e))
 def initialize_session_state():
     if "structured_report" not in st.session_state:
@@ -60,11 +57,11 @@ def instructions():
              It uses the OpenAI API (GPT-4) to generate the structured report.")
     st.write("**Instructions**")
     st.write("""
-             1. Enter the radiology report in the text area below.  
-             2. Press Ctrl+Enter and click the 'Submit' button.  
-             3. After ~20-25 seconds, the report will be structured and displayed below in JSON format.  
-             To try an example, click the 'Try example' button. After ~20-25 seconds, the \
-             example report will be structured and displayed below in JSON format.
+            1. Upload a radiology report as a .txt, .pdf, or .docx file. Or, enter/paste a radiology report into the text box and press Ctrl+Enter.
+            2. Click the 'Submit' button.  
+            3. After ~20-25 seconds, the report will be structured and displayed below in a table or JSON format.  
+            To try an example, click the 'Try example' button. After ~20-25 seconds, the \
+            example report will be structured and displayed below in JSON format.
              """)
 def credits():
     st.write("**Credits**")
@@ -73,6 +70,7 @@ def credits():
              see https://aim.hms.harvard.edu/team/keno-bressem.")
 def disclaimer():
      st.warning("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
+    
 
 def main(): 
   initialize_session_state()
@@ -96,7 +94,7 @@ def main():
   try_example = st.button("Try example")
   button = st.button("Submit")
 
-  if not report and not try_example:
+  if not st.session_state["structured_report"] and not try_example and (not report or not report.strip()):
       st.stop()
   # OpenAI API key from session state
   api_key = st.session_state["OPENAI_API_KEY"]
@@ -121,22 +119,43 @@ def main():
           report = text_from_pdf_file_path("example_files/sample_radiology_report.pdf")
       process_report(report, api_key, test=False)  
 
-
   if button and report.strip():
       process_report(report, api_key, test=False)
 
   if st.session_state["structured_report"]:
       st.markdown("## Please review the structured report below")
       structured_report = st.session_state["structured_report"]
-      st.json(st.session_state["structured_report"])
-      pretty_json = json.dumps(structured_report, indent=2)
-      # Create a download button and the download functionality
-      st.download_button(
-          label="Download JSON", 
-          data=pretty_json, 
-          file_name="structured_report.json", 
-          mime="application/json"
-      )
+      view_option = st.radio("View structured report as", ("JSON", "Table"))
+      if view_option == "JSON":
+          st.json(structured_report)
+          pretty_json = json.dumps(structured_report, indent=2)
+          # Create a download button and the download functionality
+          st.download_button(
+              label="Download JSON", 
+              data=pretty_json, 
+              file_name="structured_report.json", 
+              mime="application/json"
+          )
+      elif view_option == "Table":
+          try:
+              table = json_to_table(structured_report)
+              st.dataframe(table)
+
+              # Convert the DataFrame to CSV
+              csv = table.to_csv(index=True)
+
+              # Create a download button for the CSV data
+              st.download_button(
+                  label="Download data as CSV",
+                  data=csv,
+                  file_name='structured_report.csv',
+                  mime='text/csv',
+              )
+          except Exception as e:
+              st.error("Error with converting json report to table." + str(e) + "\n Here's the report in json: ")
+              st.json(structured_report)
+      elif view_option == "List":
+          pass
 
 if __name__ == "__main__":
     main()

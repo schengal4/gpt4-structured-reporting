@@ -28,11 +28,24 @@ def text_from_pdf_file_path(pdf_file_path):
         for page in doc:
             report_text += page.get_text()
     return report_text
-# Assuming json_str is the JSON string
-def convert_json_to_table(json_str):
-    # Parse the JSON string to a Python data structure
-    data = json.loads(json_str)
-    
-    # Convert the data to a pandas DataFrame
-    df = pd.json_normalize(data)
+# Convert json object to a pandas DataFrame
+def json_to_table(json_obj_):
+    def flatten_json(y, prefix=''):
+        out = {}
+        for key in y:
+            if isinstance(y[key], dict):
+                out.update(flatten_json(y[key], prefix + key + ': '))
+            elif isinstance(y[key], list):
+                for i, item in enumerate(y[key]):
+                    if isinstance(item, dict):
+                        out.update(flatten_json(item, prefix + key + ': ' + str(i) + ': '))
+                    else:
+                        out[prefix + key + ': ' + str(i)] = item
+            else:
+                out[prefix + key] = y[key]
+        return out
+
+    flat_report = flatten_json(json_obj_)
+    df = pd.DataFrame([flat_report])
+    df = df.T
     return df
