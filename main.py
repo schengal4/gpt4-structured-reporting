@@ -66,7 +66,7 @@ def initialize_session_state():
 def instructions():
     st.write("This tool is designed to help radiologists structure their reports. \
              It uses the OpenAI API (GPT-4) to generate the structured report.")
-    st.write("**Instructions**")
+    st.write("### Instructions")
     st.write("""
               1. Upload a radiology report as a .txt, .pdf, or .docx file. Or, enter/paste a radiology report into the text box and press Ctrl+Enter.
               2. Click the 'Submit' button.  
@@ -76,12 +76,14 @@ def instructions():
             example report will be structured and displayed below in JSON format.
              """)
 def credits():
-    st.write("**Credits**")
+    st.write("### Credits")
     st.write("This app is a Streamlit adaptation of the [gpt4-structured-reporting](https://github.com/kbressem/gpt4-structured-reporting) GitHub repository, \
              created by Keno Bressem, a board-certified radiologist. For more information about him, please \
              see https://aim.hms.harvard.edu/team/keno-bressem.")
+    st.write("The core functionality/prompts used are based on the paper [Leveraging GPT-4 for Post Hoc Transformation of Free-text Radiology Reports into Structured Reporting: A Multilingual Feasibility Study](https://doi.org/10.1148/radiol.230725), published in April 2023 and cited by 51+ different papers so far. ")
 def disclaimer():
-     st.warning("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
+    st.markdown("### Disclaimer")
+    st.write("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
     
 
 def main(): 
@@ -89,24 +91,24 @@ def main():
   # Set up the title and instructions for the Streamlit app interface.
   st.title('Radiology Report Structuring Tool')
   instructions()
-  credits()
-  disclaimer()
-
-
   # Create a text area in the UI for the user to input or paste the radiology report.
+  st.markdown("### Upload or enter/paste radiology report")
   report_upload_option = st.radio("Option for entering the report", ("Upload report as file", "Paste report"), horizontal=True)
   if report_upload_option == "Paste report":
       text_container = st.empty()
       report = text_container.text_area("Report")
   else:
       report = upload_file() #User uploads a file and it gets converted to text. Doesn't support images or bold/italics/underline/color yet.
-  # Create try example button
-  # The submit button for processing the report.
-  
-  try_example = st.button("Try example")
-  button = st.button("Submit")
 
+  # Buttons for submitting the report and trying an example.
+  col1, col2, _ = st.columns([1, 2, 4])
+  button = col1.button("Submit", key="submit_button", help="Click to submit the report for processing", type="primary")
+  try_example = col2.button("Try example", key="try_example_button", help="Click to try an example report", type="secondary")
+ 
+  # If the user hasn't submitted a report, don't do anything.
   if not st.session_state["structured_report"] and not try_example and (not report or not report.strip()):
+      disclaimer()
+      credits()
       st.stop()
   # OpenAI API key from session state
   api_key = st.session_state["OPENAI_API_KEY"]
@@ -135,7 +137,7 @@ def main():
       process_report(report, api_key, test=False)
 
   if st.session_state["structured_report"]:
-      st.markdown("## Please review the structured report below")
+      st.markdown("### Please review the structured report below")
       structured_report = st.session_state["structured_report"]
       view_option = st.radio("View structured report as", ("JSON", "Table"), horizontal=True)
       if view_option == "JSON":
@@ -168,6 +170,7 @@ def main():
               st.json(structured_report)
       elif view_option == "List":
           pass
-
+  disclaimer()
+  credits()
 if __name__ == "__main__":
     main()
