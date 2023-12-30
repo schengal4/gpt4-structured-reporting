@@ -40,15 +40,17 @@ def process_report_helper(report, api_key, test=False):
     return structured_report
 
 def process_report(report, api_key, test=False):
-    with st.spinner('Processing and structuring report...'):
-        try: 
-            st.session_state["structured_report"] = process_report_helper(report, api_key, test)
-        except Exception as e:
-            if "Incorrect API key" in str(e):
-                st.error("Incorrect API key used in the program. Please leave a comment in the comments section about this so I can know.")
-            else:
-                st.error("An error occurred while processing the report. Please leave a comment in the comments section about this so I can know.")
-                st.error("Error: " + str(e))
+    progress_msg = st.empty()
+    progress_msg.info("Processing and structuring report...")
+    try: 
+        st.session_state["structured_report"] = process_report_helper(report, api_key, test)
+    except Exception as e:
+        if "Incorrect API key" in str(e):
+            st.error("Incorrect API key used in the program. Please leave a comment in the comments section about this so I can know.")
+        else:
+            st.error("An error occurred while processing the report. Please leave a comment in the comments section about this so I can know.")
+            st.error("Error: " + str(e))
+    progress_msg.empty()
 def initialize_session_state():
     if "structured_report" not in st.session_state:
         st.session_state["structured_report"] = None
@@ -78,7 +80,7 @@ def credits():
     st.write("The core functionality/prompts used are based on the paper [Leveraging GPT-4 for Post Hoc Transformation of Free-text Radiology Reports into Structured Reporting: A Multilingual Feasibility Study](https://doi.org/10.1148/radiol.230725), published in April 2023 and cited by 51+ different papers so far. ")
 def disclaimer():
     st.markdown("### Disclaimer")
-    st.write("This app is for educational and resource use only. Don't upload patient information or any other sensitive information to a third party API.")
+    st.write("This app is for educational and research use only. Don't upload patient information or any other sensitive information to a third party API.")
     
 
 def main(): 
