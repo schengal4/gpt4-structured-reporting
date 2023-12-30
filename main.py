@@ -6,19 +6,14 @@ from utils import read_docx, text_from_pdf_file, text_from_pdf_file_path, json_t
 import pandas as pd
 
 improvement_suggestions = """
-1. Use company API key instead of the developer's.
-2. Declutter UI.
-3.. When downloading csv, make it such that the findings are not displayed in 
+1. Make OpenAI API call and the app HIPAA and GDPR-compliant, even when the user enters sensitive data.
+2. When the report is processing, there are two different loading indicators, one 
+from Streamlit by default. Remove the streamlit one.
+3. When downloading csv, make it such that the findings are not displayed in 
 one long line; instead broken up into multiple lines (but still the same cells).
-4. Make the app HIPAA-compliant and GDPR-compliant, including the call to openai api.
-5. Beautify the app.
+4. Beautify the app (minor).
 """
 
-decluttering_ui_steps = """
-1. Formatting errors
-2. Button layout
-3. Section layout
-"""
 def upload_file():
     uploaded_file = st.file_uploader("Choose a file", type=['txt', 'pdf', 'docx'])
     if uploaded_file is not None:
