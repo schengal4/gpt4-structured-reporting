@@ -1,16 +1,18 @@
-# Radiology Report Structuring with GPT-4
+# AI-Powered Radiology Report Structuring Tool
 
-This repository demonstrates how radiology reports can be structured using OpenAI's GPT-4. It includes example notebooks, a demo Flask app, and sample reports. The main goal is to demonstrate how large language models can be stratecially propmpted to perform complex tasks in information extraction and structuring of complex text data.
+The "AI-Powered Radiology Report Structuring Tool" application is designed to enhance the utility of radiological documentation by transforming unstructured, narrative-style radiology reports into a structured, standardized format. By leveraging the OpenAI GPT-4 API, the application interprets free-text reports—submitted as .pdf, .docx, .txt files or directly pasted text—and systematically organizes the information into distinct fields. This structured output facilitates easier interpretation, comparison, and integration into health records systems.
 
 
 ## Repository Structure:
-
+* main.py: Contains the Streamlit interface.  
+* gpt.py: Contains the core functionality (the prompts used in the GPT-4 calls, processing of intermediate results).  
+* utils.py: Contains the functionality for processing user-uploaded files (.pdf, word, and .txt)
 
 ```bash
 .
 ├── README.md
-├── app.py                   # Flask app. Start with python app.py
-├── gpt.py                   # Wrapper for GPT-4 API
+├── main.py                  # 
+├── gpt.py                   # 
 ├── static                   # Static files for demo app
 │   ├── css
 │   │   └── styles.css
