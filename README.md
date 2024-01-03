@@ -10,8 +10,8 @@ To try an example, click the 'Try example' button. After ~20-25 seconds, the exa
 ├── gpt.py: Contains the core functionality (the prompts used in the GPT-4 calls, processing of intermediate results).  
 ├── utils.py: Contains the functionality for processing user-uploaded files (.pdf, word, and .txt)
 ├── example_files: Folder with the file used when the user clicks the "Try Example" button.
-├── reports: Folder that contains sample reports (comes from the parent kbressem/gpt4-structured-reporting repository)
-|   ├── structured_reports.json: Sample radiology reports w/ GPT-4-generated outputs (comes from kbressem/gpt4-structured-reporting)
+├── reports: Folder that contains sample reports (comes from the parent kbressem/gpt4-structured-reporting repository)  
+|   ├── structured_reports.json: Sample radiology reports w/ GPT-4-generated outputs (comes from kbressem/gpt4-structured-reporting)  
 ├── static 
 |   ├── report_templates.json: contains the output templates sent to GPT-4 to help it select the best one.
 
