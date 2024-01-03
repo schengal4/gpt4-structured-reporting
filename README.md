@@ -7,7 +7,6 @@ The "AI-Powered Radiology Report Structuring Tool" application is designed to en
 To try an example, click the 'Try example' button. After ~20-25 seconds, the example report will be structured and displayed below in JSON format or a table.
 ## Repository Structure:
 
-```
 ├── **main.py**: Contains the Streamlit interface.  
 ├── **gpt.py**: Contains the core functionality (the prompts used in the GPT-4 calls, processing of intermediate results).  
 ├── **utils.py**: Contains the functionality for processing user-uploaded files (.pdf, word, and .txt).
@@ -16,7 +15,6 @@ To try an example, click the 'Try example' button. After ~20-25 seconds, the exa
 │   ├── **structured_reports.json**: Sample radiology reports w/ GPT-4-generated outputs (comes from kbressem/gpt4-structured-reporting)  
 ├── **static** 
 │   ├── **report_templates.json**: contains the output templates sent to GPT-4 to help it select the best one.
-```
 
 
 
