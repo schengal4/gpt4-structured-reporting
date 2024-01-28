@@ -136,7 +136,7 @@ def main():
   if st.session_state["structured_report"]:
       st.markdown("### Please review the structured report below")
       structured_report = st.session_state["structured_report"]
-      view_option = st.radio("View structured report as", ("JSON", "Table"), horizontal=True)
+      view_option = st.radio("View structured report as", ("Table", "JSON"), horizontal=True)
       if view_option == "JSON":
           st.json(structured_report)
           pretty_json = json.dumps(structured_report, indent=2)
