@@ -70,7 +70,7 @@ def instructions():
               3. After ~20-25 seconds, the report will be structured and displayed below in a table or JSON format.  
              
             To try an example, click the 'Try example' button. After ~20-25 seconds, the \
-            example report will be structured and displayed below in JSON format.
+            example report will be structured and displayed below in table format.
              """)
 def credits():
     st.write("### Credits")
